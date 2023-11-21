@@ -7,6 +7,7 @@
   </head>
 
   <body class="hold-transition sidebar-mini">
+    <div class="wrapper">
     
     {% block navbar %} 
     {% include "partials/navbar.html" %} 
@@ -16,18 +17,17 @@
     {% include "partials/sidebar.html" %} 
     {% endblock %} 
 
-    <div class="wrapper">
-      <div class="content-wrapper">
+    <div class="content-wrapper">
     {% block contenido %} 
     
     {% endblock %}
     </div>
-      </div>
-
+    
     {% include "partials/footer.html" %}
-
+    
     {% include "partials/scripts.html" %} 
-
-
+    
+    
+  </div>
   </body>
 </html>

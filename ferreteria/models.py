@@ -22,13 +22,12 @@ class Inventories(models.Model):
     price = models.IntegerField()
 
 class Sales(models.Model):
-    amount = models.PositiveIntegerField()
+    date_time = models.DateTimeField(null=False)
     customer = models.CharField(max_length=100)
     total = models.IntegerField()
 
-class Sale_Details(models.Model):
+class SaleDetails(models.Model):
     amount = models.PositiveIntegerField()
-    price = models.IntegerField()
     subtotal = models.IntegerField()
-    inventory = models.ForeignKey(Inventories, on_delete=models.CASCADE, related_name='sale_details') 
-    sale = models.ForeignKey(Sales, on_delete=models.CASCADE, related_name='sale_details')
+    inventory = models.ForeignKey(Inventories, on_delete=models.CASCADE) 
+    sale = models.ForeignKey(Sales, on_delete=models.CASCADE)

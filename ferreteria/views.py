@@ -2,9 +2,15 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from ferreteria.models import Categories, Measurement_Units, Products, Inventories, Sale_Details, Sales
+from ferreteria.models import Categories, Measurement_Units, Products, Inventories, SaleDetails, Sales
 from django.views.decorators.csrf import csrf_exempt
-
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import get_object_or_404
+from datetime import datetime, timedelta
+from django.db import transaction
+from django.template.loader import get_template
+from io import BytesIO
+from xhtml2pdf import pisa
 
 # Create your views here.
 
@@ -154,11 +160,191 @@ def Inventory(request):
     products = Products.objects.all()
     return render(request, 'paginas/inventory.html', {'inventories': inventories, 'products': products})
 
-def Sales(request):
+def SalesHistory(request):
+    data = Sales.objects.all()
+    return render(request, 'paginas/sales_history.html', {'data': data})
+
+def sales(request):
+    current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M")
+    inventories = Inventories.objects.all()
+    title = 'Registrar Ventas'
+    return render(request, 'paginas/Sales.html', {'datetime': current_datetime, 'inventories': inventories, 'title': title})
+
+def get_inventory_price(request, inventory_id=None):
+    try:
+        inventory = Inventories.objects.get(pk=inventory_id)
+        price = inventory.price
+        amount = inventory.amount
+        return JsonResponse({'price': price, 'amount': amount})
+    except Inventories.DoesNotExist:
+        return JsonResponse({'error': 'Inventario no encontrado'}, status=400)
+        
+def add_sale(request):
+    if request.method == 'POST':
+        date_time = request.POST.get('date_time')
+        total = request.POST.get('total')
+        customer = request.POST.get('customer')
+        inventory_ids = request.POST.getlist('inventory_id[]')
+        amounts = request.POST.getlist('amount[]')
+        prices = request.POST.getlist('price[]')
+
+        # Variable de error
+        error = None
+        
+        # Verificar que todas las listas tengan la misma longitud
+        if len(inventory_ids) == len(amounts) == len(prices):
+            # Iniciar una transacción para evitar cambios parciales en la base de datos
+            with transaction.atomic():
+                sale = Sales(
+                    date_time=date_time,
+                    customer=customer,
+                    total=total
+                )
+                sale.save()
+                for i in range(len(inventory_ids)):
+                    inventory_id = inventory_ids[i]
+                    amount = amounts[i]
+                    subtotal = prices[i]
+                    amount = int(amount)
+                    inventory = get_object_or_404(Inventories, id=inventory_id)
+
+                    if inventory.amount < amount:
+                        error = 'Cantidad de producto insuficiente'
+                        print('Error: ' + error)
+                        break  # Salir del bucle si se encuentra un error
+
+                    sale_detail = SaleDetails(
+                        amount=amount,
+                        subtotal=subtotal,
+                        inventory_id=inventory_id,
+                        sale_id=sale.id
+                    )
+
+                    inventory.amount -= amount
+                    inventory.save()
+                    sale_detail.save()
+
+                # Verificar si se encontró un error
+                if error:
+                    # Cancelar la transacción
+                    transaction.set_rollback(True)
+
+            if not error:
+                # Generar el PDF automáticamente
+                pdf = generate_pdf(sale)
+
+                # Configurar la respuesta para descargar el PDF
+                response = HttpResponse(content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename="venta.pdf"'
+                response.write(pdf)
+                return response
+            else:
+                # Mostrar el mensaje de error si se encontró un error
+                inventories = Inventories.objects.all()
+                current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M")
+                return render(request, 'paginas/Sales.html', {'error': error, 'inventories': inventories, 'datetime': current_datetime})
+
+        return redirect('Sales')
+        # Si los datos del formulario no son válidos, puedes manejar los errores aquí.
+
     return render(request, 'paginas/Sales.html')
 
-def SalesHistory(request):
-    return render(request, 'paginas/sales_history.html')
+def generate_pdf(sale):
+    # Supongamos que tienes una plantilla HTML llamada 'venta_template.html'
+    template_path = 'paginas/template_report_pdf.html'
+    template = get_template(template_path)
+    
+    # Supongamos que pasas la venta como contexto a la plantilla
+    context = {'sale': sale}
+    
+    # Renderiza la plantilla con el contexto
+    html = template.render(context)
+    
+    # Crea un objeto BytesIO para guardar el PDF
+    pdf_data = BytesIO()
+    
+    # Convierte el contenido HTML a PDF
+    pisa.CreatePDF(BytesIO(html.encode("UTF-8")), pdf_data)
+    
+    return pdf_data.getvalue()
+
+def generate_pdf_report(request):
+    # Obtener la opción seleccionada en el formulario del modal
+    interval = request.POST.get('interval')
+
+    # Calcular las fechas según la opción seleccionada
+    today = datetime.now()
+    
+    if interval == 'weekly':
+        start_date = today - timedelta(days=today.weekday())
+        end_date = start_date + timedelta(days=6)
+    elif interval == 'monthly':
+        start_date = today.replace(day=1)
+        end_date = (today.replace(day=1) + timedelta(days=31)).replace(day=1) - timedelta(days=1)
+    elif interval == 'yearly':
+        start_date = today.replace(month=1, day=1)
+        end_date = today.replace(month=12, day=31)
+
+    # Obtener las ventas dentro del rango de fechas
+    # Asumiendo que tienes un modelo de Ventas (Sales) y las fechas están almacenadas en un campo 'date_time'
+    sales = Sales.objects.filter(date_time__gte=start_date, date_time__lte=end_date)
+
+    # Crear el contenido HTML del PDF con las ventas
+    content = f'''
+    <html>
+    <head>
+    </head>
+    <body>
+        <div class="invoice-header">
+            <h1>Factura de Venta</h1>
+        </div>
+        <div class="invoice-details">
+            <p><strong>Desde:</strong> {start_date} - <strong>Hasta:</strong> {end_date}</p>
+            <p><strong>Total:</strong> {sum(sale.total for sale in sales)}</p>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+    '''
+    
+    for sale in sales:
+        for detail in sale.saledetails_set.all():
+            content += f'''
+            <tr>
+                <td>{today}</td>
+                <td>{detail.inventory.product.name}</td>
+                <td>{detail.amount}</td>
+                <td>${detail.subtotal}</td>
+            </tr>
+            '''
+    
+    content += f'''
+                <tr class="total">
+                    <td colspan="3"><strong>Total:</strong></td>
+                    <td>${sum(sale.total for sale in sales)}</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+    </html>
+    '''
+
+    # Generar el PDF con xhtml2pdf
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename=ventas_{start_date}_{end_date}.pdf'
+    buffer = BytesIO()
+    pisa.CreatePDF(BytesIO(content.encode('utf-8')), dest=buffer)
+    response.write(buffer.getvalue())
+    
+    return response
+
 
 def exit(request):
     logout(request)

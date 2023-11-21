@@ -1,6 +1,71 @@
 {% extends "Plantilla.html" %} {% block titulo %} Categorias {% endblock %} 
 {% block contenido %}
 
-<h1>Historial de ventas</h1>
+<div class="card">
+    <div class="container-sale">
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#pdf">
+            <i class="fas fa-file-pdf"></i>
+        </button>
+        <table id="sales" class="table table-striped" style="width:100%; padding: 10px;">
+            <thead>
+                <tr>
+                    <th>Fecha y Hora</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in data %}
+                <tr>
+                    <td>{{sale.date_time}}</td>
+                    <td>
+                        {% for detail in sale.saledetails_set.all %}
+                        {{ detail.inventory.product.name }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for detail in sale.saledetails_set.all %}
+                        {{ detail.amount }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for detail in sale.saledetails_set.all %}
+                        {{ detail.subtotal }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>{{sale.total}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>   
+        </table>
+
+        <!-- Modal PDF -->
+        <div class="modal fade" id="pdf" tabindex="-1" aria-labelledby="pdfLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h1 class="modal-title fs-5" id="pdfLabel">Imprimir PDF</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{% url 'generate_pdf_report' %}" id="pdfForm" method="post">
+                    {% csrf_token %}
+                    <select class="form-control" id="intervalSelect" name="interval">
+                        <option value="">--- Seleccione ---</option>
+                        <option value="weekly">Semanal</option>
+                        <option value="monthly">Mensual</option>
+                        <option value="yearly">Anual</option>
+                    </select>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-success">Imprimir</button>
+                </div>
+                </form>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

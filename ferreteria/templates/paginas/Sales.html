@@ -1,35 +1,187 @@
 {% extends "Plantilla.html" %} {% block titulo %} Categorias {% endblock %} 
 {% block contenido %}
-<div class="card" style="margin-left: 10px">
-    <div class="card-header" style="text-align: center; ">
-        <h1>Realizar venta</h1>
-    </div>
-<div class="card-body">
-    <form action="{% url 'Sales' %}" method="post">
+<div class="card" style="margin: 10px;">
+    {% if error %}
+    <span class="error">{{error}}</span>
+    {% endif %}
+    <form id="register_sale_form" action="{% url 'add_sale' %}" method="post">
         {% csrf_token %}
-
-        <div class="form-group">
-            <label for="amount">Cantidad</label>
-            <input type="number" class="form-control" id="amount" name="amount" required>
+        <div class="row">
+            <div class="col-md-6">
+                <label for="date_time">Fecha y Hora</label>
+                <input type="datetime-local" name="date_time" class="form-control" value="{{ datetime }}" readonly>
+            </div>
+            <div class="col-md-6">
+                <label for="customer">Cliente</label>
+                <input type="text" name="customer" id="customer" class="form-control" placeholder="Nombre del cliente">
+            </div>
+            <div class="col-md-6">
+                <label for="pay">Paga</label>
+                <input type="number" name="pay" id="pay" class="form-control">
+            </div>
+            <div class="col-md-6">
+                <label for="pay">Cambio</label>
+                <input type="number" name="change" id="change" class="form-control" readonly>
+            </div>
+            <div class="col-md-12">
+                <label for="total">Total</label>
+                <input type="number" name="total" class="form-control" readonly>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label for="customer">Cliente</label>
-            <input type="text" class="form-control" id="customer" name="customer" required>
+        <div id="products">
+            <button type="button" id="add_detail">Añadir producto</button>
+            <div class="form-row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="producto">Producto</label>
+                        <select class="form-control" name="inventory_id[]" id="id_inventory_id" >
+                            <option value="">Seleccione un producto</option>
+                            {%for i in inventories %}
+                            <option value="{{i.id}}">{{i.product.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="amount">Cantidad</label>
+                        <input style="width: 150px;" type="number" name="amount[]" id="amount" class="form-control">
+                        <span class="amount"></span>
+                        <input type="hidden" id="disponible" name="disponible">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label style="position: relative; right: 80px;" for="price_unit">Precio Unitario</label>
+                        <input style="width: 150px; position: relative; right: 80px;" type="number" name="price_unit" class="form-control" id="price_unit">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label style="position: relative; right: 160px;" for="price">Subtotal</label>
+                        <input style="width: 150px; position: relative; right: 160px;" type="number" name="price[]" class="form-control" id="subtotal">
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label for="products">Productos</label>
-            <select multiple class="form-control" id="products" name="products">
-                {% for inventory in inventories %}
-                    <option value="{{ inventory.id }}">{{ inventory.product.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Realizar venta</button>
+        <button type="submit" id="save">Guardar</button>
     </form>
-    </div>
 </div>
+<script>
+    $(document).ready(function() {
+        // Agregar un nuevo campo de producto
+        $("#add_detail").click(function() {
+            inventoryId = document.getElementById('id_inventory_id').outerHTML;
+            var newProduct = '<div class="form-row"><div class="col-md-3"><div class="form-group"><label for="producto">Producto</label>' + inventoryId + '</div></div><div class="col-md-3"><div class="form-group"><label for="amount">Cantidad</label><input style="width: 150px;" type="number" id="amount" name="amount[]" class="form-control"><span class="amount"></span><input type="hidden" id="disponible" name="disponible"></div></div><div class="col-md-3"><div class="form-group"><label style="position: relative; right: 80px;" for="price_unit">Precio Unitario</label><input style="width: 150px; position: relative; right: 80px;" type="number" name="price_unit" class="form-control" id="price_unit"></div></div><div class="col-md-3"><div class="form-group"><label style="position: relative; right: 160px;" for="price">Subtotal</label><input style="width: 150px; position: relative; right: 160px;" type="number" name="price[]" class="form-control" id="subtotal"></div></div><button type="button" class="delete">Eliminar</button></div>';
+
+            // Agregar el nuevo campo al DOM
+            $("#products").append(newProduct);
+
+        });
+
+        $('#products').on('change', '#id_inventory_id', function() {
+            var selectedInventoryId = $(this).val();
+            var url = window.location.origin + '/sales/' + selectedInventoryId;  
+            var parentElement = $(this).closest('.form-row');
+            var priceUnitField = parentElement.find('input#price_unit');   
+            var disponible = parentElement.find('input#disponible');   
+            var amountField = parentElement.find('.amount');  
+            if(selectedInventoryId){ 
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(data) {
+                        var priceUnit = parseFloat(data.price);
+                        var amount = parseFloat(data.amount);
+                        
+                        priceUnitField.val(priceUnit);
+                        amountField.text('Disponible: ' + amount)
+                        disponible.val(amount);
+                        
+
+                        updateSubTotalPrice()
+                    },
+                    error: function() {
+                        // Manejo de errores
+                    }
+                });
+            }else{
+                priceUnitField.val('');
+                amountField.text('')
+                disponible.val('');
+                updateSubTotalPrice();
+            }
+        });
+
+        $('#products').on('input', 'input#amount', function() {
+            updateSubTotalPrice(); // Actualizar el precio total cuando se modifica la cantidad
+        });
+
+        function updateSubTotalPrice() {
+            var isValid = true;
+            $('.form-row').each(function() {
+                var priceField = $(this).find('input#price_unit').val();
+                var price = parseFloat(priceField) || 0;
+                var amountField = $(this).find('input#amount').val();
+                var amount = parseFloat(amountField) || 0;
+                var disponible = $(this).find('input#disponible').val();
+                var amountDisponible = parseFloat(disponible) || 0;
+                var totalField = $(this).find('input#subtotal');
+                var subtotal = price * amount;
+                totalField.val(subtotal);
+
+                if (amount > amountDisponible) {
+                    isValid = false;
+                }
+            });
+
+            updateTotalPrice(); // Actualiza el campo de Total con el valor calculado
+
+            // Habilitar o deshabilitar el botón de guardar en función de la validez
+            if (isValid) {
+                $('#save').prop('disabled', false); // Habilitar el botón
+            } else {
+                $('#save').prop('disabled', true); // Deshabilitar el botón
+            }
+        }
+
+
+        function updateTotalPrice() {
+            var totalPrice = 0;
+            $('.form-row').each(function() {
+                var totalField = $(this).find('input#subtotal');
+                var subtotal = parseFloat(totalField.val()) || 0;
+                totalPrice += subtotal;
+            });
+            // Actualiza el campo de Total con el valor calculado
+            $('input[name="total"]').val(totalPrice);
+        }
+
+        $('.row').on('input', '#pay', function() {
+            updateChange();
+        });
+
+        function updateChange() {
+            var total = parseFloat($('input[name="total"]').val()) || 0;
+            var pay = parseFloat($('input[name="pay"]').val()) || 0;
+            var change = pay - total;
+
+            // Mostrar el cambio en el campo "Cambio"
+            $('input[name="change"]').val(change);
+        }
+
+        // Eliminar un campo de producto
+        $("#products").on("click", ".delete", function() {
+            $(this).parent(".form-row").remove();
+            updateSubTotalPrice();
+        });
+
+        $("#save").on("click", function() {
+            setTimeout(function() {
+                document.getElementById('register_sale_form').reset();
+            }, 1000);
+        });
+    });
+</script>
 
 {% endblock %}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo de Venta</title>
+    <style type="text/css">
+        #details{
+            text-align: center;
+        }
+        #total{
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="invoice-header">
+        <h1>Factura de Venta</h1>
+    </div>
+    
+    <div class="invoice-details">
+        <p><strong>Fecha:</strong> {{ sale.date_time }}</p>
+        <p><strong>Total:</strong> {{ sale.total}} </p>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detail in sale.saledetails_set.all %}
+            <tr>
+                <td id="details">{{ detail.inventory.product.name }}</td>
+                <td id="details">{{ detail.amount }}</td>
+                <td id="details">${{ detail.subtotal }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total">
+                <td id="total" colspan="3">Total:</td>
+                <td>${{ sale.total }}</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
