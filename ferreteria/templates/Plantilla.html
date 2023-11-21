@@ -1,0 +1,33 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include "partials/head.html" %}
+  </head>
+
+  <body class="hold-transition sidebar-mini">
+    
+    {% block navbar %} 
+    {% include "partials/navbar.html" %} 
+    {% endblock %} 
+
+    {% block sidebar %} 
+    {% include "partials/sidebar.html" %} 
+    {% endblock %} 
+
+    <div class="wrapper">
+      <div class="content-wrapper">
+    {% block contenido %} 
+    
+    {% endblock %}
+    </div>
+      </div>
+
+    {% include "partials/footer.html" %}
+
+    {% include "partials/scripts.html" %} 
+
+
+  </body>
+</html>

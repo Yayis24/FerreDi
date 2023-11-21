@@ -1,0 +1,46 @@
+{% extends "Plantilla.html" %} {% block titulo %} Categorias {% endblock %} 
+{% block contenido %}
+<br>
+<div class="card" style="margin-left: 10px">
+    <div class="card-header" style="text-align: center; ">
+      <h4>Productos</h4>
+    </div>
+    <div class="card-body">
+      <button class="btn btn-success" style="margin-bottom: 5px;" data-toggle="modal" data-target="#modal-agregar-producto">Agregar</button>
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Precio</th>
+            <th>Categoría</th>
+            <th>Unidad de medida</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.description }}</td>
+                <td>{{ product.price }}</td>
+                <td>{{ product.category.name }}</td>
+                <td>{{ product.measurement_unit.name }}</td>
+            <td>
+              <button class="btn btn-warning edit-btn" data-name="{{ product.name }}" data-description="{{ product.description }}" data-price="{{ product.price }}" data-category="{{ product.category.id }}" data-measurement_unit="{{ product.measurement_unit.id }}" data-bs-toggle="modal" data-bs-target="#modal-editar-producto{{product.id}}"><i class="fas fa-edit"></i></button> 
+              <button class="btn btn-danger edit-btn" data-name="{{ product.name }}" data-bs-toggle="modal" data-bs-target="#modal-eliminar-producto{{product.id}}"><i class="fas fa-trash"></i></button>   
+              </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+  
+  {% include "modals/ModalProducts.html" %} 
+
+
+{% endblock %}

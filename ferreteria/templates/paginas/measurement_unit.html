@@ -1,0 +1,40 @@
+{% extends "Plantilla.html" %} {% block titulo %} Categorias {% endblock %} 
+{% block contenido %}
+<br>
+    <!-- Tabla Unidad de medida -->
+    <div class="card" style="margin-left: 10px">
+        <div class="card-header" style="text-align: center;">
+          <h4>Unidades de medida</h4>
+        </div>
+        <div class="card-body">
+          <button class="btn btn-success" style="margin-bottom: 5px" data-toggle="modal" data-target="#modal-agregar1">Agregar</button>
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>Nombre</th>
+                <th>Abreviacion</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for measurement_unit in measurement_units %}
+              <tr>
+                <td>{{ measurement_unit.id }}</td>
+                <td>{{ measurement_unit.name }}</td>
+                <td>{{ measurement_unit.abbreviation }}</td>
+                <td>
+                  <button class="btn btn-warning edit-btn" data-name="{{ measurement_unit.id }}" data-bs-toggle="modal" data-bs-target="#modal-editar1{{measurement_unit.id}}"><i class="fas fa-edit"></i></button> 
+                  <button class="btn btn-danger edit-btn" data-name="{{ measurement_unit.id }}" data-bs-toggle="modal" data-bs-target="#modal-eliminar1{{ measurement_unit.id }}"><i class="fas fa-trash"></i></button>   
+                  </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    {% include "modals/ModalMeasurement_Unit.html" %} 
+
+
+{% endblock %}

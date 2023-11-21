@@ -1,0 +1,142 @@
+<!-- Modal de agregar -->
+<div class="modal fade" id="modal-agregar-producto" tabindex="-1" role="dialog" aria-labelledby="modal-agregar-producto-label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-agregar-producto-label">Agregar Producto</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="{% url 'products' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="nombre">Nombre Producto</label>
+              <input type="text" class="form-control" id="nombre" name="nombre" required>
+            </div>
+            <div class="form-group">
+              <label for="descripcion">Descripción Producto</label>
+              <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="precio">Precio Producto</label>
+              <input type="number" class="form-control" id="precio" name="precio" required>
+            </div>
+            <div class="form-group">
+              <label for="categoria">Categoría Producto</label>
+              <select class="form-control" id="categoria" name="categoria" required>
+                <option value="">Seleccione la categoria</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="unidad_medida">Unidad de Medida Producto</label>
+              <select class="form-control" id="unidad_medida" name="unidad_medida" required>
+                <option value="">Seleccione la unidad de medida</option>
+                {% for measurement_unit in measurement_units %}
+                <option value="{{ measurement_unit.id }}">{{ measurement_unit.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Agregar Producto</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de editar -->
+  {% for product in products %} 
+  <div class="modal fade" id="modal-editar-producto{{product.id}}" tabindex="-1" role="dialog" aria-labelledby="modal-editar-producto{{product.id}}Label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-editar-producto{{product.id}}Label">Editar Producto</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="edit-form" method="post" action="{% url 'products' %}">
+          {% csrf_token %}
+          <div class="modal-body">
+            <input type="hidden" id="edit-id" name="edit_id" value="{{ product.id }}">
+            <div class="form-group">
+              <label for="edit-nombre">Nombre Producto</label>
+              <input type="text" class="form-control" id="edit-nombre" name="edit_nombre" value="{{ product.name }}" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-descripcion">Descripción Producto</label>
+              <textarea class="form-control" id="edit-descripcion" name="edit_descripcion" rows="3">{{ product.description }}</textarea>
+            </div>
+            <div class="form-group">
+              <label for="edit-precio">Precio Producto</label>
+              <input type="number" class="form-control" id="edit-precio" name="edit_precio" value="{{ product.price }}" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-categoria">Categoría Producto</label>
+              <select class="form-control" id="edit-categoria" name="edit_categoria" required>
+                <option value="">Seleccione la categoria</option>
+                {% for category in categories %}
+                  {% if category.id == product.category.id %}
+                    <option value="{{ category.id }}" selected>{{ category.name }}</option>
+                  {% else %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="edit-unidad-medida">Unidad de Medida Producto</label>
+              <select class="form-control" id="edit-unidad-medida" name="edit_unidad_medida" required>
+                <option value="">Seleccione la unidad de medida</option>
+                {% for measurement_unit in measurement_units %}
+                  {% if measurement_unit.id == product.measurement_unit.id %}
+                    <option value="{{ measurement_unit.id }}" selected>{{ measurement_unit.name }}</option>
+                  {% else %}
+                    <option value="{{ measurement_unit.id }}">{{ measurement_unit.name }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Editar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- Modal de eliminar -->
+  {% for product in products %}
+  <div class="modal fade" id="modal-eliminar-producto{{product.id}}" tabindex="-1" role="dialog" aria-labelledby="modal-eliminar-producto{{product.id}}Label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-eliminar-producto{{product.id}}Label">Eliminar Producto</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="edit-form" method="post" action="{% url 'products' %}">
+          {% csrf_token %}
+          <div class="modal-body">
+            <input type="hidden" id="delete-id" name="delete_id" value="{{ product.id }}">
+            <p>¿Seguro que deseas eliminar este registro?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  

@@ -1,0 +1,35 @@
+{% extends "Plantilla.html" %} {% block titulo %} Categorias {% endblock %} 
+{% block contenido %}
+<div class="card" style="margin-left: 10px">
+    <div class="card-header" style="text-align: center; ">
+        <h1>Realizar venta</h1>
+    </div>
+<div class="card-body">
+    <form action="{% url 'Sales' %}" method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="amount">Cantidad</label>
+            <input type="number" class="form-control" id="amount" name="amount" required>
+        </div>
+
+        <div class="form-group">
+            <label for="customer">Cliente</label>
+            <input type="text" class="form-control" id="customer" name="customer" required>
+        </div>
+
+        <div class="form-group">
+            <label for="products">Productos</label>
+            <select multiple class="form-control" id="products" name="products">
+                {% for inventory in inventories %}
+                    <option value="{{ inventory.id }}">{{ inventory.product.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Realizar venta</button>
+    </form>
+    </div>
+</div>
+
+{% endblock %}
