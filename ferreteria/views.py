@@ -11,13 +11,40 @@ from django.db import transaction
 from django.template.loader import get_template
 from io import BytesIO
 from xhtml2pdf import pisa
-
+from django.contrib.auth import authenticate, login
+from .forms import CustomRegistrationForm
 # Create your views here.
+
+def Register(request):
+    if request.method == 'POST':
+        form = CustomRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            authenticated_user = authenticate(request, username=user.username, password=form.cleaned_data['password1'])
+            if authenticated_user:
+                login(request, authenticated_user)
+                return redirect('login')  # Cambia 'home' con la URL a la que deseas redirigir después del registro
+    else:
+        form = CustomRegistrationForm()
+    
+    return render(request, 'registration/register.html', {'form': form})
+
+def user_login(request):
+    if request.method == 'GET':
+        return render(request, 'registration/login.html')
+    else:
+        print(request.POST['username'])
+        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+        if user is None:
+            print('Credenciales incorrectas')
+            return render(request, 'registration/login.html', {'error': 'Credenciales incorrectas.'})
+        else:
+            return redirect('home')
+
 
 def home(request):
     return render(request, 'paginas/home.html')
 
-@login_required
 
 @csrf_exempt
 def Category(request):
@@ -348,4 +375,4 @@ def generate_pdf_report(request):
 
 def exit(request):
     logout(request)
-    return redirect('home')
+    return redirect('login')

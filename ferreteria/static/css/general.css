@@ -1,0 +1,7 @@
+.btn-success.custom-style {
+    /* Estilos específicos para la clase btn-success */
+    background-color: rgb(19, 175, 19);/* Color dorado como ejemplo */
+    color: white; /* Color de texto negro como ejemplo */
+    border: none;
+
+}

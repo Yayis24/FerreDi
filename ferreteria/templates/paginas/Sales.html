@@ -1,6 +1,10 @@
 {% extends "Plantilla.html" %} {% block titulo %} Categorias {% endblock %} 
 {% block contenido %}
+<br>
 <div class="card" style="margin: 10px;">
+    <div class="card-header" style="text-align: center; ">
+        <h4>Ventas</h4>
+      </div>
     {% if error %}
     <span class="error">{{error}}</span>
     {% endif %}
@@ -28,6 +32,7 @@
                 <input type="number" name="total" class="form-control" readonly>
             </div>
         </div>
+        <br>
         <div id="products">
             <button type="button" id="add_detail">Añadir producto</button>
             <div class="form-row">
@@ -64,7 +69,10 @@
                 </div>
             </div>
         </div>
-        <button type="submit" id="save">Guardar</button>
+        <br>
+        <button type="submit" id="save">
+            Guardar <i class="fas fa-save"></i>
+        </button>
     </form>
 </div>
 <script>

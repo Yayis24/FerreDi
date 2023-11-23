@@ -1,12 +1,12 @@
 {% extends "Plantilla.html" %} {% block titulo %} Categorias {% endblock %} 
 {% block contenido %}
-
-<div class="card">
+<br>
+<div class="card" style="margin-left: 10px">
+    <div class="card-header" style="text-align: center; ">
+        <h4>Historial de ventas</h4>
+      </div>
     <div class="container-sale">
-        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#pdf">
-            <i class="fas fa-file-pdf"></i>
-        </button>
-        <table id="sales" class="table table-striped" style="width:100%; padding: 10px;">
+        <table id="sales" class="table table-bordered table-striped">
             <thead>
                 <tr>
                     <th>Fecha y Hora</th>
@@ -41,6 +41,20 @@
             </tbody>   
         </table>
 
+        <a id="exportar" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#pdf">
+            Exportar <i class="fas fa-file-pdf"></i>
+        </a>
+
+        <style>
+            #exportar{
+                width: 14%;
+                margin: 0 auto;
+                display: inline-block;
+                text-align: center;
+                margin-left: 40%;
+            }
+        </style>
+
         <!-- Modal PDF -->
         <div class="modal fade" id="pdf" tabindex="-1" aria-labelledby="pdfLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -49,8 +63,10 @@
                 <h1 class="modal-title fs-5" id="pdfLabel">Imprimir PDF</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <div class="modal-body">
                 <form action="{% url 'generate_pdf_report' %}" id="pdfForm" method="post">
                     {% csrf_token %}
+                    <label for="edit-product">Tiempo de ventas</label>
                     <select class="form-control" id="intervalSelect" name="interval">
                         <option value="">--- Seleccione ---</option>
                         <option value="weekly">Semanal</option>
@@ -62,6 +78,7 @@
                     <button type="submit" class="btn btn-success">Imprimir</button>
                 </div>
                 </form>
+            </div>
             </div>
             </div>
         </div>

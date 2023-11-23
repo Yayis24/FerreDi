@@ -1,54 +1,83 @@
-/* En tu archivo de estilos CSS */
-.login-form {
-    width: 300px;
-    margin: 0 auto;
+
+ /* Define la animación */
+    @keyframes moveAndCenter {
+      0% {
+          transform: translateY(-50%);
+      }
+      100% {
+          transform: translateY(0);
+      }
+    }
+      /* Aplica la animación a la clase 'animated-title' */
+    .animated-title {
+          animation: moveAndCenter 1s ease-out; /* Puedes ajustar la duración y el tipo de animación según tus preferencias */
+    }
+
+    /* Agrega estos estilos a tu archivo de estilos CSS o en línea en tu HTML según sea necesario */
+
+  .welcome-section {
+    text-align: center;
     padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-  }
-  
-  .login-form h2 {
-    text-align: center;
-    color: #333;
-  }
-  
-  .login-form label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: bold;
-  }
-  
-  .login-form input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  .login-form button {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .login-form button:hover {
-    background-color: #0056b3;
-  }
-  
-  .login-form p {
-    text-align: center;
-    margin-top: 10px;
   }
 
-  a{
-    text-decoration: none;
+  .info-text {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 30px;
   }
-  
-  /* Agrega estilos adicionales según tus necesidades */
-  
+
+  .highlight-box {
+    background-color: #e4c30c; /* Color de fondo amarillo */
+    padding: 10px;
+    border-radius: 5px;
+  }
+
+  .highlight-text {
+    font-weight: bold;
+    color: #333;
+}
+
+
+.feature-section,
+.process-section {
+    display: flex;
+    justify-content: space-around;
+    background-color: #fff;
+    padding: 50px;
+    margin-top: 20px;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.feature-section h2,
+.process-section h2 {
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feature-section ul,
+.process-section ol {
+    font-size: 16px;
+    color: #666;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-section li,
+.process-section li {
+    margin-bottom: 10px;
+    list-style: none;
+}
+
+footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

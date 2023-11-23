@@ -1,10 +1,11 @@
-from django.urls import path, include
+from django.urls import path
 from . import views
 
 
 urlpatterns = [
-    path('accounts/', include('django.contrib.auth.urls')),
-    path('',views.home,name='home' ),
+    path('',views.user_login,name='login' ),
+    path('register/', views.Register, name='register'),
+    path('home/',views.home,name='home' ),
     path('category/',views.Category,name='category' ),
     path('measurement_unit/',views.Measurement_Unit,name='measurement_unit' ),
     path('inventory/',views.Inventory,name='inventory' ),
